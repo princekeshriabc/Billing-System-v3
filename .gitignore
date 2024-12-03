@@ -2,8 +2,8 @@
 
 # dependencies
 /node_modules
-./billing-system/node_modules
-./server/node_modules
+/billing-system/node_modules
+/server/node_modules
 /.pnp
 .pnp.js
 

@@ -278,8 +278,7 @@ const NewBill = () => {
                 // Set the download link for the QR Code
                 downloadQRLink.href = qrApi;
             });
-    };
-}
+  };
   
   return (
     <div className="new-bill-container">
@@ -489,5 +488,6 @@ const NewBill = () => {
       </form>
     </div>
   );
+}
 
 export default NewBill;
