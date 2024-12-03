@@ -129,7 +129,7 @@ const NewBill = () => {
 
     try {
       const response = await axios.post("https://billing-system-iota.vercel.app/api/payments", newPayment);
-      console.log("Payment Response:", response);
+      // console.log("Payment Response:", response);
 
       if (response.status === 201) {
         const paymentId = response.data._id;
@@ -176,7 +176,7 @@ const NewBill = () => {
       const pendingAmount = payableAmount - totalPaidAmount;
       const isCleared = totalPaidAmount >= payableAmount;
 
-      console.log(`Total Paid: ₹${totalPaidAmount}, Pending: ₹${pendingAmount}`);
+      // console.log(`Total Paid: ₹${totalPaidAmount}, Pending: ₹${pendingAmount}`);
 
       // Step 1: Send all items to the backend and receive product IDs
       const productPromises = items.map((item) =>
@@ -193,7 +193,7 @@ const NewBill = () => {
       const productResponses = await Promise.all(productPromises);
       const productIds = productResponses.map((res) => res.data._id);
   
-      console.log('Product IDs:', productIds);
+      // console.log('Product IDs:', productIds);
   
       // Step 2: Create the bill with the product IDs and payment information
       const billPayload = {
@@ -212,7 +212,7 @@ const NewBill = () => {
   
       if (billResponse.status === 201) {
         const savedBill = billResponse.data;
-        console.log("Bill saved successfully:", savedBill);
+        // console.log("Bill saved successfully:", savedBill);
   
         // Step 3: Update products and payments with the bill ID
         const updatePayload = {
@@ -239,49 +239,100 @@ const NewBill = () => {
         throw new Error("Failed to save bill.");
       }
     } catch (error) {
-      console.log('Error saving bill:', error);
+      // console.log('Error saving bill:', error);
       alert('Error occurred while saving the bill.');
     }
   };
 
+
+  const generateQrCode = () => {
+    document.addEventListener('DOMContentLoaded', function () {
+            const generateQRButton = document.getElementById('generate_qr');
+            const qrSection = document.getElementById('qr_section');
+            const qrCodeImage = document.getElementById('qr_code');
+            const downloadQRLink = document.getElementById('download_qr');
+
+            // generateQRButton.addEventListener('click', function () {
+            //     const amount = document.getElementById('amount').value;
+            //     if (!amount || amount <= 0) {
+            //         alert('Please enter a valid amount');
+            //         return;
+            //     }
+
+                // Generate UPI link
+                const upiId = 'princekeshri252@okicici';
+                const name = encodeURIComponent('Prince Keshri'); // Replace with your merchant name
+                const transactionNote = encodeURIComponent('Payment for services'); // Payment note can be customized
+                const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=${onlinePaymentAmount}&tn=${transactionNote}`;
+
+                console.log(upiLink);
+
+                // Generate QR Code using QRServer API
+                const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiLink)}`;
+                console.log(qrApi);
+
+                // Set the QR Code image source
+                qrCodeImage.src = qrApi;
+                qrSection.classList.remove('hidden'); // Show the QR code section
+
+                // Set the download link for the QR Code
+                downloadQRLink.href = qrApi;
+            });
+    };
+}
+  
   return (
     <div className="new-bill-container">
       <form onSubmit={handleSubmit}>
         <div className="bill-header">
           <h2>Shagun Collection</h2>
-          <p>Invoice No: {billId} Date: {new Date().toLocaleDateString()}</p>
+          <p>
+            Invoice No: {billId} Date: {new Date().toLocaleDateString()}
+          </p>
         </div>
 
         <div className="bill-details">
-        <h3>Details of Receiver</h3>
-        <div className="form-group form-row"> {/* Added form-row class */}
-            <div className="form-field"> {/* Wrap name input in a div */}
-            <label>Name:</label>
-            <input
+          <h3>Details of Receiver</h3>
+          <div className="form-group form-row">
+            {" "}
+            {/* Added form-row class */}
+            <div className="form-field">
+              {" "}
+              {/* Wrap name input in a div */}
+              <label>Name:</label>
+              <input
                 type="text"
                 onChange={handleNameChange}
                 list="user-suggestions"
                 required
-            />
-            <datalist id="user-suggestions">
-              {users.map((user) => (
-                <option key={user._id} value={user.name} />
-              ))}
-            </datalist>
+              />
+              <datalist id="user-suggestions">
+                {users.map((user) => (
+                  <option key={user._id} value={user.name} />
+                ))}
+              </datalist>
             </div>
-            <div className="form-field"> {/* Wrap contact number input in a div */}
-            <label>Contact No:</label>
-            <input
+            <div className="form-field">
+              {" "}
+              {/* Wrap contact number input in a div */}
+              <label>Contact No:</label>
+              <input
                 type="text"
                 value={contactNo}
                 onChange={(e) => setContactNo(e.target.value)}
                 required
-            />
+              />
             </div>
-            <button className="add-item-button" type="button" onClick={handleAddUser} disabled={!isNewName}>Add Name</button>
+            <button
+              className="add-item-button"
+              type="button"
+              onClick={handleAddUser}
+              disabled={!isNewName}
+            >
+              Add Name
+            </button>
+          </div>
         </div>
-        </div>
-
 
         <div className="item-list">
           <h3>Items</h3>
@@ -295,21 +346,70 @@ const NewBill = () => {
           </div>
           {items.map((item, index) => (
             <div key={index} className="item-row">
-              <input type="text" name="item" placeholder="Item" value={item.item} onChange={(e) => handleItemChange(index, e)} required />
-              <input type="number" name="quantity" placeholder="Qty" value={item.quantity} onChange={(e) => handleItemChange(index, e)} required />
-              <input type="number" name="sellingPrice" placeholder="Selling Price" value={item.sellingPrice} onChange={(e) => handleItemChange(index, e)} required />
-              <input type="number" name="discountPercentage" placeholder="Discount %" value={item.discountPercentage} onChange={(e) => handleItemChange(index, e)} />
-              <input type="text" name="discountedPrice" placeholder="Discounted Price" value={item.discountedPrice} readOnly />
-              <input type="text" name="totalPrice" placeholder="Total Price" value={item.totalPrice} readOnly />
+              <input
+                type="text"
+                name="item"
+                placeholder="Item"
+                value={item.item}
+                onChange={(e) => handleItemChange(index, e)}
+                required
+              />
+              <input
+                type="number"
+                name="quantity"
+                placeholder="Qty"
+                value={item.quantity}
+                onChange={(e) => handleItemChange(index, e)}
+                required
+              />
+              <input
+                type="number"
+                name="sellingPrice"
+                placeholder="Selling Price"
+                value={item.sellingPrice}
+                onChange={(e) => handleItemChange(index, e)}
+                required
+              />
+              <input
+                type="number"
+                name="discountPercentage"
+                placeholder="Discount %"
+                value={item.discountPercentage}
+                onChange={(e) => handleItemChange(index, e)}
+              />
+              <input
+                type="text"
+                name="discountedPrice"
+                placeholder="Discounted Price"
+                value={item.discountedPrice}
+                readOnly
+              />
+              <input
+                type="text"
+                name="totalPrice"
+                placeholder="Total Price"
+                value={item.totalPrice}
+                readOnly
+              />
             </div>
           ))}
-          <button type="button" onClick={deleteItem} className="delete-item-button">Delete Item</button>
-          <button type="button" onClick={addItem} className="add-item-button">Add Item</button>
+          <button
+            type="button"
+            onClick={deleteItem}
+            className="delete-item-button"
+          >
+            Delete Item
+          </button>
+          <button type="button" onClick={addItem} className="add-item-button">
+            Add Item
+          </button>
         </div>
 
         <h3>Total Amount: ₹{totalAmount}</h3>
 
-        <h3>Total Payable Amount: ₹ <input
+        <h3>
+          Total Payable Amount: ₹{" "}
+          <input
             type="number"
             value={payableAmount}
             onChange={(e) => setPayableAmount(e.target.value)}
@@ -318,8 +418,12 @@ const NewBill = () => {
         </h3>
 
         <div className="payment-buttons">
-          <button type="button" onClick={handleShowOnlinePayment}>Pay Online</button>
-          <button type="button" onClick={handleShowCashPayment}>Cash Payment</button>
+          <button type="button" onClick={handleShowOnlinePayment}>
+            Pay Online
+          </button>
+          <button type="button" onClick={handleShowCashPayment}>
+            Cash Payment
+          </button>
         </div>
         {/* Online Payment Section */}
         {showOnlinePayment && (
@@ -327,13 +431,36 @@ const NewBill = () => {
             <h3>Online Payment</h3>
             <input
               type="number"
+              placeholder="Enter amount"
               value={onlinePaymentAmount}
               onChange={(e) => setOnlinePaymentAmount(e.target.value)}
             />
-            <button type="button"
-              onClick={() => handleAddPayment(onlinePaymentAmount, false, "QR12345")}
+            <button
+              id="generate_qr"
+              // class="bg-blue-500 text-white px-4 py-2 rounded-md"
+              type="button"
+              onClick={generateQrCode}
             >
-              Generate QR
+              Generate QR Code
+            </button>
+            <div id="qr_section" class="mt-6 hidden">
+              <h2
+                // class="text-lg font-bold"
+              >Scan to Pay</h2>
+              <img id="qr_code" src="" alt="QR Code"
+                // class="my-4"
+              />
+            <a id="download_qr" href="#" download="qr_code.png"
+                // class="bg-green-500 text-white px-4 py-2 rounded-md"
+              >Download QR Code</a>
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                handleAddPayment(onlinePaymentAmount, false, "QR12345")
+              }
+            >
+              Done
             </button>
           </div>
         )}
@@ -347,7 +474,8 @@ const NewBill = () => {
               value={cashPaymentAmount}
               onChange={(e) => setCashPaymentAmount(e.target.value)}
             />
-            <button type="button"
+            <button
+              type="button"
               onClick={() => handleAddPayment(cashPaymentAmount, true)}
             >
               Paid Cash
@@ -361,6 +489,5 @@ const NewBill = () => {
       </form>
     </div>
   );
-};
 
 export default NewBill;

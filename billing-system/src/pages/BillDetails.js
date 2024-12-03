@@ -33,7 +33,7 @@ const BillDetails = () => {
           `https://billing-system-iota.vercel.app/api/bills/${billid}`
         );
         const billData = response.data;
-        console.log('Bill Data:', billData);
+        // console.log('Bill Data:', billData);
         setBill(billData);
         setItems(billData.products); // Initialize items from bill data
         setPayments(billData.payments);
@@ -125,7 +125,7 @@ const BillDetails = () => {
         "https://billing-system-iota.vercel.app/api/payments",
         newPayment
       );
-      console.log("Payment Response:", response);
+      // console.log("Payment Response:", response);
 
       if (response.status === 201) {
         const paymentId = response.data._id;
@@ -159,7 +159,7 @@ const BillDetails = () => {
         `https://billing-system-iota.vercel.app/api/bills/${billid}`,
         updatedBillData
       );
-      console.log("Updated Bill:", response.data);
+      // console.log("Updated Bill:", response.data);
   
       alert("Bill updated successfully!");
     } catch (error) {

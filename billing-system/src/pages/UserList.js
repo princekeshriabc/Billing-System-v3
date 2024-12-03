@@ -13,8 +13,8 @@ const UserList = () => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get('https://billing-system-iota.vercel.app/api/users'); // Adjust the route if necessary
-        console.log("Response is", response);
-        console.log("Response data is", response.data);
+        // console.log("Response is", response);
+        // console.log("Response data is", response.data);
         setUsers(response.data);
       } catch (error) {
         console.error('Error fetching users:', error);

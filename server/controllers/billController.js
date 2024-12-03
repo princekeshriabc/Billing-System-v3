@@ -53,7 +53,7 @@ export const updateBillIds = async (req, res) => {
 
     // console.log(totalAmount, " ", pendingAmount);
     // console.log(typeof totalAmount, " ", typeof pendingAmount);
-    console.log(userId);
+    // console.log(userId);
     const updateUserFields = {
       $push: { bills: billId }, // Add billId to the bills array
       $inc: { totalPurchaseAmount: totalAmount }, // Increment total purchase amount
@@ -90,7 +90,7 @@ export const getAllBills = async (req, res) => {
 
 export const getBillById = async (req, res) => {
   const { billid } = req.params;
-  console.log("billid: ", billid);
+  // console.log("billid: ", billid);
 
   try {
     const bill = await Bill.findById(billid)
