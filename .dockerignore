@@ -1,0 +1,4 @@
+node_modules
+./server/node_modules
+./billing-system/node_modules
+.gitignore
