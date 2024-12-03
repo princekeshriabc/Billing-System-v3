@@ -27,7 +27,7 @@ const NewBill = () => {
 
   // Function to add a new item row
   useEffect(() => {
-    axios.get('http://localhost:5000/api/users', {
+    axios.get('https://billing-system-iota.vercel.app/api/users', {
       proxy:{
         host: 'localhost',
         port: 5000
@@ -87,7 +87,7 @@ const NewBill = () => {
 
   // Handle adding new user
   const handleAddUser = () => {
-    axios.post('http://localhost:5000/api/users', { name: customerName, contactNo })
+    axios.post('https://billing-system-iota.vercel.app/api/users', { name: customerName, contactNo })
       .then((response) =>{
         setUsers([...users, response.data]);
         setUserId(response.data._id);
@@ -128,7 +128,7 @@ const NewBill = () => {
     };
 
     try {
-      const response = await axios.post("http://localhost:5000/api/payments", newPayment);
+      const response = await axios.post("https://billing-system-iota.vercel.app/api/payments", newPayment);
       console.log("Payment Response:", response);
 
       if (response.status === 201) {
@@ -180,7 +180,7 @@ const NewBill = () => {
 
       // Step 1: Send all items to the backend and receive product IDs
       const productPromises = items.map((item) =>
-        axios.post('http://localhost:5000/api/products', {
+        axios.post('https://billing-system-iota.vercel.app/api/products', {
           itemName: item.item,
           quantity: item.quantity,
           sellingPrice: item.sellingPrice,
@@ -208,7 +208,7 @@ const NewBill = () => {
         isCleared: isCleared, // Not cleared initially
       };
   
-      const billResponse = await axios.post('http://localhost:5000/api/bills', billPayload);
+      const billResponse = await axios.post('https://billing-system-iota.vercel.app/api/bills', billPayload);
   
       if (billResponse.status === 201) {
         const savedBill = billResponse.data;
@@ -225,7 +225,7 @@ const NewBill = () => {
         };
   
         const updateResponse = await axios.post(
-          "http://localhost:5000/api/bills/update-bill-ids",
+          "https://billing-system-iota.vercel.app/api/bills/update-bill-ids",
           updatePayload
         );
   
