@@ -1,15 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import './NewBill.css'; 
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./NewBill.css";
+import { useNavigate } from "react-router-dom";
 
 const NewBill = () => {
   const [billId] = useState(Date.now().toString()); // Unique bill ID
-  const [customerName, setCustomerName] = useState('');
-  const [contactNo, setContactNo] = useState('');
+  const [customerName, setCustomerName] = useState("");
+  const [contactNo, setContactNo] = useState("");
   const [users, setUsers] = useState([]);
   const [userid, setUserId] = useState(null);
-  const [items, setItems] = useState([{ item: '', quantity: '',sellingPrice: '', discountPercentage: '', discountedPrice: '', totalPrice: '' }]);
+  const [items, setItems] = useState([
+    {
+      item: "",
+      quantity: "",
+      sellingPrice: "",
+      discountPercentage: "",
+      discountedPrice: "",
+      totalPrice: "",
+    },
+  ]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [payableAmount, setPayableAmount] = useState(0);
   const [isNewName, setIsNewName] = useState(false);
@@ -27,47 +36,58 @@ const NewBill = () => {
 
   // Function to add a new item row
   useEffect(() => {
-    axios.get('https://billing-system-iota.vercel.app/api/users', {
-      proxy:{
-        host: 'localhost',
-        port: 5000
-      }
-    })
-    .then((response) =>{
-      setUsers(response.data);
-    } )
-    .catch((error) => console.error('Failed to fetch users', error));
-  },[]);
+    axios
+      .get("https://billing-system-iota.vercel.app/api/users", {
+        proxy: {
+          host: "localhost",
+          port: 5000,
+        },
+      })
+      .then((response) => {
+        setUsers(response.data);
+      })
+      .catch((error) => console.error("Failed to fetch users", error));
+  }, []);
 
   useEffect(() => {
     setPayableAmount(totalAmount); // Sync payable amount with total initially
   }, [totalAmount]);
 
-  useEffect(()=>{
+  useEffect(() => {
     setCashPaymentAmount(payableAmount);
     setOnlinePaymentAmount(payableAmount);
   }, [payableAmount]);
 
   const addItem = () => {
-    setItems([...items, { item: '', quantity: '', sellingPrice: '', discountPercentage: '', discountedPrice: '', totalPrice: '' }]);
+    setItems([
+      ...items,
+      {
+        item: "",
+        quantity: "",
+        sellingPrice: "",
+        discountPercentage: "",
+        discountedPrice: "",
+        totalPrice: "",
+      },
+    ]);
   };
 
-  const deleteItem = ()=>{
+  const deleteItem = () => {
     if (items.length === 0) {
       return;
     }
     // Remove the last item from the state
     setItems((prevItems) => prevItems.slice(0, -1));
-  }
+  };
 
-  const handleShowOnlinePayment = () =>{
+  const handleShowOnlinePayment = () => {
     setShowOnlinePayment(!showCashPayment);
     setShowCashPayment(false);
-  } 
-  const handleShowCashPayment = () =>{
+  };
+  const handleShowCashPayment = () => {
     setShowCashPayment(!showCashPayment);
     setShowOnlinePayment(false);
-  } 
+  };
 
   const handleNameChange = (e) => {
     const inputName = e.target.value;
@@ -80,21 +100,25 @@ const NewBill = () => {
       setContactNo(selectedUser.contactNo); // Autofill contact number
       setIsNewName(false);
     } else {
-      setContactNo(''); // Clear contact number if no match
+      setContactNo(""); // Clear contact number if no match
       setIsNewName(true);
     }
   };
 
   // Handle adding new user
   const handleAddUser = () => {
-    axios.post('https://billing-system-iota.vercel.app/api/users', { name: customerName, contactNo })
-      .then((response) =>{
+    axios
+      .post("https://billing-system-iota.vercel.app/api/users", {
+        name: customerName,
+        contactNo,
+      })
+      .then((response) => {
         setUsers([...users, response.data]);
         setUserId(response.data._id);
-        alert('User added successfully');
+        alert("User added successfully");
         setIsNewName(false);
       })
-      .catch((error) => console.error('Failed to add user', error));
+      .catch((error) => console.error("Failed to add user", error));
   };
 
   // Function to handle changes in item fields
@@ -106,11 +130,13 @@ const NewBill = () => {
     newItems[index][name] = value;
 
     const sellingPrice = parseFloat(newItems[index].sellingPrice) || 0;
-    const discountPercentage = parseFloat(newItems[index].discountPercentage) || 0;
+    const discountPercentage =
+      parseFloat(newItems[index].discountPercentage) || 0;
 
-    const discountedPrice = sellingPrice - (sellingPrice * (discountPercentage / 100));
+    const discountedPrice =
+      sellingPrice - sellingPrice * (discountPercentage / 100);
     newItems[index].discountedPrice = discountedPrice.toFixed(2);
-    
+
     const quantity = parseFloat(newItems[index].quantity) || 0;
     newItems[index].totalPrice = (quantity * discountedPrice).toFixed(2);
 
@@ -128,8 +154,11 @@ const NewBill = () => {
     };
 
     try {
-      const response = await axios.post("https://billing-system-iota.vercel.app/api/payments", newPayment);
-      // console.log("Payment Response:", response);
+      const response = await axios.post(
+        "https://billing-system-iota.vercel.app/api/payments",
+        newPayment
+      );
+      console.log("Payment Response:", response);
 
       if (response.status === 201) {
         const paymentId = response.data._id;
@@ -150,17 +179,23 @@ const NewBill = () => {
 
   // Function to calculate total amount of the bill
   const calculateTotalAmount = () => {
-    const total = items.reduce((acc, item) => acc + (parseFloat(item.totalPrice) || 0), 0);
+    const total = items.reduce(
+      (acc, item) => acc + (parseFloat(item.totalPrice) || 0),
+      0
+    );
     setTotalAmount(total.toFixed(2));
   };
 
   const calculateTotalPaidAmount = () => {
-    return payments.reduce((total, payment) => total + Number(payment.amount), 0);
+    return payments.reduce(
+      (total, payment) => total + Number(payment.amount),
+      0
+    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     console.log({
       billId,
       customerName,
@@ -170,17 +205,19 @@ const NewBill = () => {
       payableAmount,
       payments,
     });
-  
+
     try {
       const totalPaidAmount = calculateTotalPaidAmount();
       const pendingAmount = payableAmount - totalPaidAmount;
       const isCleared = totalPaidAmount >= payableAmount;
 
-      // console.log(`Total Paid: ₹${totalPaidAmount}, Pending: ₹${pendingAmount}`);
+      console.log(
+        `Total Paid: ₹${totalPaidAmount}, Pending: ₹${pendingAmount}`
+      );
 
       // Step 1: Send all items to the backend and receive product IDs
       const productPromises = items.map((item) =>
-        axios.post('https://billing-system-iota.vercel.app/api/products', {
+        axios.post("https://billing-system-iota.vercel.app/api/products", {
           itemName: item.item,
           quantity: item.quantity,
           sellingPrice: item.sellingPrice,
@@ -189,15 +226,15 @@ const NewBill = () => {
           totalPrice: item.totalPrice,
         })
       );
-  
+
       const productResponses = await Promise.all(productPromises);
       const productIds = productResponses.map((res) => res.data._id);
-  
-      // console.log('Product IDs:', productIds);
-  
+
+      console.log("Product IDs:", productIds);
+
       // Step 2: Create the bill with the product IDs and payment information
       const billPayload = {
-        user: userid, 
+        user: userid,
         products: productIds,
         totalAmount: parseFloat(totalAmount),
         totalPayableAmount: parseFloat(payableAmount),
@@ -207,13 +244,16 @@ const NewBill = () => {
         isPending: true, // Default as pending
         isCleared: isCleared, // Not cleared initially
       };
-  
-      const billResponse = await axios.post('https://billing-system-iota.vercel.app/api/bills', billPayload);
-  
+
+      const billResponse = await axios.post(
+        "https://billing-system-iota.vercel.app/api/bills",
+        billPayload
+      );
+
       if (billResponse.status === 201) {
         const savedBill = billResponse.data;
-        // console.log("Bill saved successfully:", savedBill);
-  
+        console.log("Bill saved successfully:", savedBill);
+
         // Step 3: Update products and payments with the bill ID
         const updatePayload = {
           billId: savedBill._id,
@@ -223,15 +263,15 @@ const NewBill = () => {
           totalAmount: parseFloat(payableAmount),
           pendingAmount: parseFloat(pendingAmount),
         };
-  
+
         const updateResponse = await axios.post(
           "https://billing-system-iota.vercel.app/api/bills/update-bill-ids",
           updatePayload
         );
-  
+
         if (updateResponse.status === 200) {
           alert("Bill saved and references updated successfully!");
-          navigate('/bills');
+          navigate("/bills");
         } else {
           throw new Error("Failed to update product and payment references.");
         }
@@ -239,47 +279,11 @@ const NewBill = () => {
         throw new Error("Failed to save bill.");
       }
     } catch (error) {
-      // console.log('Error saving bill:', error);
-      alert('Error occurred while saving the bill.');
+      console.log("Error saving bill:", error);
+      alert("Error occurred while saving the bill.");
     }
   };
 
-
-  const generateQrCode = () => {
-    document.addEventListener('DOMContentLoaded', function () {
-            const generateQRButton = document.getElementById('generate_qr');
-            const qrSection = document.getElementById('qr_section');
-            const qrCodeImage = document.getElementById('qr_code');
-            const downloadQRLink = document.getElementById('download_qr');
-
-            // generateQRButton.addEventListener('click', function () {
-            //     const amount = document.getElementById('amount').value;
-            //     if (!amount || amount <= 0) {
-            //         alert('Please enter a valid amount');
-            //         return;
-            //     }
-
-                // Generate UPI link
-                const upiId = 'princekeshri252@okicici';
-                const name = encodeURIComponent('Prince Keshri'); // Replace with your merchant name
-                const transactionNote = encodeURIComponent('Payment for services'); // Payment note can be customized
-                const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=${onlinePaymentAmount}&tn=${transactionNote}`;
-
-                console.log(upiLink);
-
-                // Generate QR Code using QRServer API
-                const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiLink)}`;
-                console.log(qrApi);
-
-                // Set the QR Code image source
-                qrCodeImage.src = qrApi;
-                qrSection.classList.remove('hidden'); // Show the QR code section
-
-                // Set the download link for the QR Code
-                downloadQRLink.href = qrApi;
-            });
-  };
-  
   return (
     <div className="new-bill-container">
       <form onSubmit={handleSubmit}>
@@ -430,36 +434,16 @@ const NewBill = () => {
             <h3>Online Payment</h3>
             <input
               type="number"
-              placeholder="Enter amount"
               value={onlinePaymentAmount}
               onChange={(e) => setOnlinePaymentAmount(e.target.value)}
             />
-            <button
-              id="generate_qr"
-              // class="bg-blue-500 text-white px-4 py-2 rounded-md"
-              type="button"
-              onClick={generateQrCode}
-            >
-              Generate QR Code
-            </button>
-            <div id="qr_section" class="mt-6 hidden">
-              <h2
-                // class="text-lg font-bold"
-              >Scan to Pay</h2>
-              <img id="qr_code" src="" alt="QR Code"
-                // class="my-4"
-              />
-            <a id="download_qr" href="#" download="qr_code.png"
-                // class="bg-green-500 text-white px-4 py-2 rounded-md"
-              >Download QR Code</a>
-            </div>
             <button
               type="button"
               onClick={() =>
                 handleAddPayment(onlinePaymentAmount, false, "QR12345")
               }
             >
-              Done
+              Generate QR
             </button>
           </div>
         )}
@@ -488,6 +472,6 @@ const NewBill = () => {
       </form>
     </div>
   );
-}
+};
 
 export default NewBill;
